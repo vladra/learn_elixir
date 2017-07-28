@@ -21,13 +21,13 @@ defmodule HangmanTest do
     for state <- [:won, :lost] do
       game = Game.new_game() |> Map.put(:game_state, state)
 
-      assert game == Game.make_move(game, "")
+      assert {^game, _tally} = Game.make_move(game, "")
     end
   end
 
   test "first occurrence of letter is not already used" do
     game = Game.new_game()
-    game = Game.make_move(game, "x")
+    {game, _tally} = Game.make_move(game, "x")
 
     assert "x" in game.used
     assert game.game_state != :already_used
@@ -35,16 +35,16 @@ defmodule HangmanTest do
 
   test "second occurrence of letter is not already used" do
     game = Game.new_game()
-    game = Game.make_move(game, "x")
+    {game, _tally} = Game.make_move(game, "x")
     assert game.game_state != :already_used
 
-    game = Game.make_move(game, "x")
+    {game, _tally} = Game.make_move(game, "x")
     assert game.game_state == :already_used
   end
 
   test "a good guess is recognised" do
     game = Game.new_game("wibble")
-    game = Game.make_move(game, "w")
+    {game, _tally} = Game.make_move(game, "w")
 
     assert game.game_state == :good_guess
     assert game.turns_left == 7
@@ -61,7 +61,7 @@ defmodule HangmanTest do
     ]
 
     Enum.reduce moves, game, fn({guess, state}, game) ->
-      game = Game.make_move(game, guess)
+      {game, _tally} = Game.make_move(game, guess)
       assert game.game_state == state
       game
     end
@@ -69,7 +69,7 @@ defmodule HangmanTest do
 
   test "a bad guess is recognised" do
     game = Game.new_game("wibble")
-    game = Game.make_move(game, "a")
+    {game, _tally} = Game.make_move(game, "a")
 
     assert game.game_state == :bad_guess
     assert game.turns_left == 6
@@ -77,7 +77,7 @@ defmodule HangmanTest do
 
   test "a bad guess is a lost game" do
     game = Game.new_game("wibble") |> Map.put(:turns_left, 1)
-    game = Game.make_move(game, "a")
+    {game, _tally} = Game.make_move(game, "a")
     assert game.game_state == :lost
   end
 end
